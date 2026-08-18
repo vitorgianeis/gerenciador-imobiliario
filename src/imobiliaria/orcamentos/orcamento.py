@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 from src.imobiliaria.clientes.cliente import Cliente
-from src.imobiliaria.models.imovel import Imovel
+from src.imobiliaria.imoveis.imovel import Imovel
 from src.imobiliaria.contratos.contrato import Contrato  # NOVO IMPORT
 
 
@@ -150,10 +150,10 @@ class Orcamento:
             "imovel_tipo": self._imovel.get_tipo() if self._imovel else "",
             "endereco": self._imovel.endereco if self._imovel else "",
             "quartos": self._imovel.quantidade_quartos if self._imovel else 0,
-            "vagas": self._imovel.quantidade_vagas if self._imovel else 0,
+            "quantidade_vagas": self._imovel.quantidade_vagas if self._imovel else 0,
             "valor_base": self._valor_aluguel_base,
             "quartos_extras": self._valor_quartos_extras,
-            "vagas": self._valor_vagas,
+            "valor_vagas": self._valor_vagas,
             "desconto": self._valor_desconto,
             "percentual_desconto": self._percentual_desconto,
             "valor_aluguel_final": self._valor_aluguel_final,
@@ -170,3 +170,49 @@ class Orcamento:
             resumo["status_contrato"] = self._contrato.status
             
         return resumo
+
+    def gerar_csv_parcelas_mensais(self, nome_arquivo: str = "parcelas_mensais.csv"):
+        """
+        Gera um arquivo CSV com as 12 parcelas mensais do orçamento.
+        Cada parcela inclui: aluguel + parcela do contrato.
+        """
+        import csv
+        from datetime import date, timedelta
+
+        if not self._cliente or not self._imovel:
+            raise ValueError("Orçamento deve ter cliente e imóvel definidos")
+
+        valor_aluguel = self._valor_aluguel_final
+        parcela_contrato = (
+            self._contrato.valor_parcela if self._contrato else 0.0
+        )
+        total_mensal = valor_aluguel + parcela_contrato
+
+        data_atual = date.today()
+
+        with open(nome_arquivo, 'w', newline='', encoding='utf-8-sig') as arquivo:
+            writer = csv.writer(arquivo, delimiter=';')
+
+            # Cabeçalho
+            writer.writerow([
+                'Mês',
+                'Aluguel (R$)',
+                'Parcela Contrato (R$)',
+                'Total Mensal (R$)',
+                'Data Vencimento',
+                'Status'
+            ])
+
+            # Gera 12 parcelas mensais
+            for i in range(1, 13):
+                data_vencimento = data_atual + timedelta(days=30 * i)
+                writer.writerow([
+                    f'{i}/12',
+                    f'{valor_aluguel:.2f}',
+                    f'{parcela_contrato:.2f}',
+                    f'{total_mensal:.2f}',
+                    data_vencimento.strftime('%d/%m/%Y'),
+                    'A PAGAR'
+                ])
+
+        print(f"✅ Arquivo '{nome_arquivo}' gerado com sucesso!")

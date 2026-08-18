@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 from typing import Optional
-from src.imobiliaria.models.imovel import Imovel
+from src.imobiliaria.imoveis.imovel import Imovel
 
 
 @dataclass
-class Casa(Imovel):
-    """Representa uma Casa."""
+class Apartamento(Imovel):
+    """Representa um Apartamento."""
 
-    VALOR_BASE: float = 900.00
-    VALOR_QUARTO_EXTRA: float = 250.00
+    VALOR_BASE: float = 700.00
+    VALOR_QUARTO_EXTRA: float = 200.00
     VALOR_VAGA: float = 300.00
+    PERCENTUAL_DESCONTO: float = 0.05
 
     def _definir_valor_base(self) -> float:
         return self.VALOR_BASE
@@ -32,5 +33,8 @@ class Casa(Imovel):
         return self._quantidade_vagas * self.VALOR_VAGA
 
     def calcular_desconto(self, possui_criancas: bool) -> float:
-        """Casa não possui desconto."""
-        return 0.0
+        """Calcula desconto de 5% se não possui crianças."""
+        if possui_criancas:
+            return 0.0
+        aluguel = self.calcular_aluguel()
+        return aluguel * self.PERCENTUAL_DESCONTO

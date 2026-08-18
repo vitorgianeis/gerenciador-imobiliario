@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from src.imobiliaria.models.imovel import Imovel
+from src.imobiliaria.imoveis.imovel import Imovel
 
 
 @dataclass
